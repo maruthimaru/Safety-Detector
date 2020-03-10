@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                     if (destinationString.length()>0){
                         destination.setError(null);
 
-Intent intent=new Intent(MainActivity.this,MapsActivity.class);
+Intent intent=new Intent(MainActivity.this,MapquestActivity.class);
 intent.putExtra("source",sourceString);
                         intent.putExtra("destination",destinationString);
                         startActivity(intent);
