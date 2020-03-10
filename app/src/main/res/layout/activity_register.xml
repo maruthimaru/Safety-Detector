@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardviewlayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/size_30dp"
+                android:layout_marginRight="@dimen/size_30dp"
+                app:cardCornerRadius="@dimen/size_10dp"
+                app:cardElevation="@dimen/size_3dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/size_10dp">
+
+                    <EditText
+                        android:id="@+id/userName"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_40dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/borderblack"
+                        android:digits="@string/digits"
+                        android:hint="@string/username"
+                        android:inputType="textAutoComplete"
+                        android:maxLength="@integer/int_50"
+                        android:paddingStart="@dimen/size_10dp"
+                        android:paddingLeft="@dimen/size_10dp"
+                        android:paddingTop="@dimen/size_5dp"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingBottom="@dimen/size_5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/darkGray"
+                        android:textSize="@dimen/size_12dp"
+                        tools:ignore="RtlSymmetry" />
+
+                    <EditText
+                        android:id="@+id/contactNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_10dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/borderblack"
+                        android:digits="@string/digits"
+                        android:hint="@string/contactno"
+                        android:inputType="number"
+                        android:maxLength="@integer/int_10"
+                        android:paddingStart="@dimen/size_12dp"
+                        android:paddingLeft="@dimen/size_12dp"
+                        android:paddingTop="@dimen/size_5dp"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingBottom="@dimen/size_5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/darkGray"
+                        android:textSize="@dimen/size_12dp"
+                        tools:ignore="RtlSymmetry" />
+
+
+                    <EditText
+                        android:id="@+id/emailAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_10dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/borderblack"
+                        android:digits="@string/digits_email"
+                        android:hint="@string/enterEmail"
+                        android:inputType="textEmailAddress"
+                        android:maxLength="@integer/int_50"
+                        android:paddingStart="@dimen/size_12dp"
+                        android:paddingLeft="@dimen/size_12dp"
+                        android:paddingTop="@dimen/size_5dp"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingBottom="@dimen/size_5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/darkGray"
+                        android:textSize="@dimen/size_12dp"
+                        tools:ignore="RtlSymmetry" />
+
+                    <EditText
+                        android:id="@+id/password"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_10dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/borderblack"
+                        android:digits="@string/digits"
+                        android:hint="@string/Password"
+                        android:inputType="textPassword"
+                        android:maxLength="@integer/int_50"
+                        android:paddingStart="@dimen/size_12dp"
+                        android:paddingLeft="@dimen/size_12dp"
+                        android:paddingTop="@dimen/size_5dp"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingBottom="@dimen/size_5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/darkGray"
+                        android:textSize="@dimen/size_12dp" />
+
+                    <EditText
+                        android:id="@+id/conformPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_10dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/borderblack"
+                        android:digits="@string/digits"
+                        android:hint="@string/Conformpassword"
+                        android:inputType="textPassword"
+                        android:maxLength="@integer/int_50"
+                        android:paddingStart="@dimen/size_12dp"
+                        android:paddingLeft="@dimen/size_12dp"
+                        android:paddingTop="@dimen/size_5dp"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingBottom="@dimen/size_5dp"
+                        android:singleLine="true"
+                        android:textColor="@color/darkGray"
+                        android:textSize="@dimen/size_12dp" />
+
+
+                    <TextView
+                        android:id="@+id/next"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_20dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:background="@drawable/button_background_60"
+                        android:gravity="center"
+                        android:minWidth="@dimen/size_100dp"
+                        android:text="@string/save"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/size_16dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/goBack"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/size_20dp"
+                        android:layout_marginTop="@dimen/size_20dp"
+                        android:layout_marginRight="@dimen/size_20dp"
+                        android:layout_marginBottom="@dimen/size_40dp"
+                        android:gravity="end"
+                        android:text="@string/goBack"
+                        android:textColor="@color/darkGray" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+</ScrollView>
+
