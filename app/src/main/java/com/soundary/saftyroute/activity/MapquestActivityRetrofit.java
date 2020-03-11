@@ -1,8 +1,5 @@
 package com.soundary.saftyroute.activity;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -11,6 +8,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -21,6 +22,14 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapquest.mapping.MapQuest;
 import com.mapquest.mapping.maps.MapView;
 import com.soundary.saftyroute.R;
+import com.soundary.saftyroute.pojo.AlternateRoute;
+import com.soundary.saftyroute.pojo.AlternateRoutesResponse;
+import com.soundary.saftyroute.pojo.Leg_;
+import com.soundary.saftyroute.pojo.Maneuver;
+import com.soundary.saftyroute.pojo.Maneuver_;
+import com.soundary.saftyroute.pojo.RequestLocation;
+import com.soundary.saftyroute.retrofit.GetDataService;
+import com.soundary.saftyroute.retrofit.RetrofitClientInstance;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,13 +46,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class MapquestActivity extends AppCompatActivity {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class MapquestActivityRetrofit extends AppCompatActivity {
 
     private MapView mMapView;
     private MapboxMap mMapboxMap;
-    private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(39.750307, -104.999472);
-    String sourceString, destinationString;
-    private ArrayList<LatLng> MarkerPoints = new ArrayList<>();
+    private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(10.994793199685589, 76.95993763494403);
+    String sourceString,destinationString;
+    private ArrayList<LatLng> MarkerPoints=new ArrayList<>();
+    private String TAG=MapquestActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +69,9 @@ public class MapquestActivity extends AppCompatActivity {
         mMapView = (MapView) findViewById(R.id.mapquestMapView);
         mMapView.onCreate(savedInstanceState);
 
-        Bundle bundle = getIntent().getExtras();
-        sourceString = bundle.getString("source");
-        destinationString = bundle.getString("destination");
+        Bundle bundle=getIntent().getExtras();
+        sourceString=bundle.getString("source");
+        destinationString=bundle.getString("destination");
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -69,10 +84,11 @@ public class MapquestActivity extends AppCompatActivity {
                 mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
-                        Toast.makeText(MapquestActivity.this, marker.getTitle(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MapquestActivityRetrofit.this, marker.getTitle(), Toast.LENGTH_LONG).show();
                         return true;
                     }
                 });
+
 
                 mapboxMap.setOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override
@@ -113,7 +129,7 @@ public class MapquestActivity extends AppCompatActivity {
 
                             Geocoder geocoder;
                             List<Address> sourceAddresses,destinationAddress;
-                            geocoder = new Geocoder(MapquestActivity.this, Locale.getDefault());
+                            geocoder = new Geocoder(MapquestActivityRetrofit.this, Locale.getDefault());
 
                             try {
                                 sourceAddresses = geocoder.getFromLocation(origin.getLatitude(), origin.getLongitude(), 1);
@@ -123,7 +139,7 @@ public class MapquestActivity extends AppCompatActivity {
                                 String country = sourceAddresses.get(0).getCountryName();
                                 String postalCode = sourceAddresses.get(0).getPostalCode();
                                 String knownName = sourceAddresses.get(0).getFeatureName();
-                                sourceString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
+//                                sourceString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -135,18 +151,129 @@ public class MapquestActivity extends AppCompatActivity {
                                 String country = destinationAddress.get(0).getCountryName();
                                 String postalCode = destinationAddress.get(0).getPostalCode();
                                 String knownName = destinationAddress.get(0).getFeatureName();
-                                destinationString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
+//                                destinationString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
 
-                            // Getting URL to the Google Directions API
-                            String url = getUrl(origin, dest);
-//                            Log.d("onMapClick", url.toString());
-                            FetchUrl FetchUrl = new FetchUrl();
+                            List<String> location=new ArrayList<>();
+//                            String str_origin = origin.getLatitude()+","+origin.getLatitude();
+                            String str_origin = "10.994793199685589"+","+"76.95993763494403";
+// Destination of route
+                            String str_dest = "11.009758422710263"+","+ "76.94394936132437";
+                            location.add(str_origin);
+                            location.add(str_dest);
+                            JSONArray jsArray = new JSONArray();
+                            for (int i = 0; i < location.size(); i++) {
+                                jsArray.put(location.get(i));
+                            }
+                            Log.e(TAG, "onMapClick: location : "+ jsArray );
 
-                            // Start downloading json data from Google Directions API
-                            FetchUrl.execute(url);
+                            RequestLocation requestLocation=new RequestLocation(location,3,100);
+                            Log.e(TAG, "onMapClick: requestLocation : "+requestLocation );
+
+
+                            /*Create handle for the RetrofitInstance interface*/
+                            GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
+                            Call<AlternateRoutesResponse> call = service.getAllPhotos(requestLocation);
+                            call.enqueue(new Callback<AlternateRoutesResponse>() {
+                                @Override
+                                public void onResponse(Call<AlternateRoutesResponse> call, Response<AlternateRoutesResponse> response) {
+                                    Log.e(TAG, "onResponse: "+ response.body().getRoute().getAlternateRoutes());
+
+                                    try {
+                                        List<AlternateRoute> alternateRouteList= response.body().getRoute().getAlternateRoutes();
+                                        ArrayList<LatLng> points;
+                                        PolylineOptions lineOptions = null;
+
+                                        for (AlternateRoute alternateRoute:alternateRouteList){
+                                            List path = new ArrayList<>();
+                                            lineOptions = new PolylineOptions();
+                                            List<Leg_> leg_list= alternateRoute.getRoute().getLegs();
+                                            for (Leg_ leg_:leg_list){
+                                                List<Maneuver_> maneuver_list = leg_.getManeuvers();
+                                                for (Maneuver_ maneuver:maneuver_list){
+
+                                                    List<LatLng> list = new ArrayList<>();
+                                                    LatLng latLng=new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
+                                                    Log.e(TAG, "parse: latLng : "+latLng );
+                                                    list.add(latLng);
+
+                                                    // Adding all the points in the route to LineOptions
+                                                    lineOptions.addAll(list);
+                                                    lineOptions.width(10);
+                                                    lineOptions.color(Color.RED);
+                                                    /** Traversing all points */
+//                                                    for(int l=0;l<list.size();l++){
+//                                                        HashMap<String, String> hm = new HashMap<>();
+//                                                        hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
+//                                                        hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
+//                                                        path.add(hm);
+//                                                    }
+                                                }
+                                            }
+                                            // Drawing polyline in the Google Map for the i-th route
+                                            if(lineOptions != null) {
+                                                mMapboxMap.addPolyline(lineOptions);
+                                            }
+                                            else {
+                                                Log.d("onPostExecute","without Polylines drawn");
+
+                                            }
+                                        }
+
+
+//
+//                                        // Traversing through all the routes
+//                                        for (int i = 0; i < result.size(); i++) {
+//                                            points = new ArrayList<>();
+//                                            lineOptions = new PolylineOptions();
+//
+//                                            // Fetching i-th route
+//                                            List<HashMap<String, String>> path = result.get(i);
+//
+//                                            // Fetching all the points in i-th route
+//                                            for (int j = 0; j < path.size(); j++) {
+//                                                HashMap<String, String> point = path.get(j);
+//
+//                                                double lat = Double.parseDouble(point.get("lat"));
+//                                                double lng = Double.parseDouble(point.get("lng"));
+//                                                LatLng position = new LatLng(lat, lng);
+//
+//                                                points.add(position);
+//                                            }
+//
+//                                            // Adding all the points in the route to LineOptions
+//                                            lineOptions.addAll(points);
+//                                            lineOptions.width(10);
+//                                            lineOptions.color(Color.RED);
+//
+//                                            Log.d("onPostExecute","onPostExecute lineoptions decoded");
+//
+//                                        }
+
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Log.e(TAG, "parse: "+e.getLocalizedMessage() );
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFailure(Call<AlternateRoutesResponse> call, Throwable t) {
+                                    Log.e(TAG, "onFailure: "+t.getLocalizedMessage() );
+                                    Toast.makeText(MapquestActivityRetrofit.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+//                            // Getting URL to the Google Directions API
+//                            String url = getUrl(origin, dest);
+////                            Log.d("onMapClick", url.toString());
+//                            FetchUrl FetchUrl = new FetchUrl();
+//
+//                            // Start downloading json data from Google Directions API
+//                            FetchUrl.execute(url);
                             //move map camera
                             mMapboxMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
                             mMapboxMap.animateCamera(CameraUpdateFactory.zoomTo(11));
@@ -184,9 +311,9 @@ public class MapquestActivity extends AppCompatActivity {
         Address address = addressList.get(0);
         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
         mMapboxMap.addMarker(new MarkerOptions().position(latLng).title(sourceString));
-        mMapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+        mMapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,10));
 //            mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-        Toast.makeText(getApplicationContext(), address.getLatitude() + " " + address.getLongitude(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(),address.getLatitude()+" "+address.getLongitude(),Toast.LENGTH_LONG).show();
 
         //destination
         try {
@@ -198,9 +325,9 @@ public class MapquestActivity extends AppCompatActivity {
         Address destinationaddress = addressList.get(0);
         LatLng destinationlatLng = new LatLng(destinationaddress.getLatitude(), destinationaddress.getLongitude());
         mMapboxMap.addMarker(new MarkerOptions().position(destinationlatLng).title(destinationString));
-        mMapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+        mMapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,10));
 //            mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-        Toast.makeText(getApplicationContext(), destinationaddress.getLatitude() + " " + destinationaddress.getLongitude(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(),destinationaddress.getLatitude()+" "+destinationaddress.getLongitude(),Toast.LENGTH_LONG).show();
         String url = getUrl(latLng, destinationlatLng);
         FetchUrl FetchUrl = new FetchUrl();
 
@@ -209,59 +336,56 @@ public class MapquestActivity extends AppCompatActivity {
     }
 
 
-    private String getUrl(LatLng origin, LatLng dest) {
+    private String getUrl(LatLng origin, LatLng dest){
 
-        Log.e("TAG", "address" + sourceString + "detination : " + destinationString);
+        Log.e("TAG","address" + sourceString + "detination : " + destinationString);
 
 // Origin of route
-        String str_origin = "origin=" + origin.getLatitude() + "," + origin.getLatitude();
+        String str_origin = "origin="+origin.getLatitude()+"%2C"+origin.getLatitude();
 
 // Destination of route
-        String str_dest = "destination=" + dest.getLatitude() + "," + dest.getLongitude();
+        String str_dest = "destination="+dest.getLatitude()+"%2C"+dest.getLongitude();
 
 // Sensor enabled
         String sensor = "sensor=false";
 
 // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
+        String parameters = str_origin+"&"+str_dest+"&"+sensor;
 
 // Output format
         String output = "json";
 
         //key
-        String key = "?key=26HrKEQBSOAk4GA2RMiz10VeZCLDkTzc";
-
-        Log.e("TAG ", "getUrl: " + origin + "destination : " + dest);
+        String key="?key=42K0L9WTmAuyBS6L8jD8gadFz5KjW3Yu";
 
 // Building the url to the web service
-        String url = "https://www.mapquestapi.com/directions/v2/route" + key + "&from=" + sourceString + "&to=" + destinationString + "&outFormat=json&ambiguities=check&routeType=fastest&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false";
-        Log.e("TAG", "getUrl: " + url);
-
+        String url = "https://www.mapquestapi.com/directions/v2/alternateroutes"+key+"&from="+str_origin+"&to="+str_dest+"&outFormat=json&ambiguities=ignore&routeType=fastest&maxRoutes=3&timeOverage=25&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false&unit=M";
+        Log.e(TAG, "getUrl: "+url );
         return url;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        mMapView.onResume();
+    public void onResume()
+    { super.onResume();
+    mMapView.onResume();
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        mMapView.onPause();
+    public void onPause()
+    { super.onPause();
+    mMapView.onPause();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mMapView.onDestroy();
+    protected void onDestroy()
+    { super.onDestroy();
+    mMapView.onDestroy();
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mMapView.onSaveInstanceState(outState);
+    protected void onSaveInstanceState(Bundle outState)
+    { super.onSaveInstanceState(outState);
+    mMapView.onSaveInstanceState(outState);
     }
 
     //fetch class
@@ -326,7 +450,7 @@ public class MapquestActivity extends AppCompatActivity {
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
+            Log.d("Exception", e.getLocalizedMessage());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -345,17 +469,17 @@ public class MapquestActivity extends AppCompatActivity {
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask", jsonData[0].toString());
+                Log.d("ParserTask",jsonData[0].toString());
                 DataParser parser = new DataParser();
                 Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-                Log.d("ParserTask", "Executing routes");
-                Log.d("ParserTask", routes.toString());
+                Log.d("ParserTask","Executing routes");
+                Log.d("ParserTask",routes.toString());
 
             } catch (Exception e) {
-                Log.d("ParserTask", e.toString());
+                Log.d("ParserTask",e.getLocalizedMessage());
                 e.printStackTrace();
             }
             return routes;
@@ -391,73 +515,73 @@ public class MapquestActivity extends AppCompatActivity {
                 lineOptions.width(10);
                 lineOptions.color(Color.RED);
 
-                Log.d("onPostExecute", "onPostExecute lineoptions decoded");
+                Log.d("onPostExecute","onPostExecute lineoptions decoded");
 
             }
 
             // Drawing polyline in the Google Map for the i-th route
-            if (lineOptions != null) {
+            if(lineOptions != null) {
                 mMapboxMap.addPolyline(lineOptions);
-            } else {
-                Log.d("onPostExecute", "without Polylines drawn");
+            }
+            else {
+                Log.d("onPostExecute","without Polylines drawn");
+
             }
         }
     }
 
     public class DataParser {
 
-        /**
-         * Receives a JSONObject and returns a list of lists containing latitude and longitude
-         */
-        public List<List<HashMap<String, String>>> parse(JSONObject jObject) {
+        /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
+        public List<List<HashMap<String,String>>> parse(JSONObject jObject){
 
-            List<List<HashMap<String, String>>> routes = new ArrayList<>();
+            List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
             JSONArray jRoutes;
             JSONArray jLegs;
             JSONArray jSteps;
 
+
             try {
 
-                jRoutes = jObject.getJSONArray("collections");
-                List path = new ArrayList<>();
+                jRoutes = jObject.getJSONArray("route");
+                Log.e(TAG, "jRoutes: "+jRoutes );
                 /** Traversing all routes */
-                for (int i = 0; i < jRoutes.length(); i++) {
-                    jLegs = (JSONArray) jRoutes.get(i);
+                for(int i=0;i<jRoutes.length();i++){
+                    jLegs = ( (JSONObject)jRoutes.get(i)).getJSONArray("legs");
+                    List path = new ArrayList<>();
 
-                    Log.e("tag", "jLegs: " + jLegs.length());
                     /** Traversing all legs */
-//                    for(int j=0;j<jLegs.length();j++){
+                    for(int j=0;j<jLegs.length();j++){
+                        jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("maneuvers");
 
-//                        jSteps = (JSONObject) jLegs.get(j);
-//                        Log.e("tag", "jSteps: "+jSteps.length());
-                    /** Traversing all steps */
-                    for (int k = 0; k < jLegs.length(); k++) {
-
-                        String polyline = "";
-                        polyline = ((JSONObject) ((JSONObject) jLegs.get(k)).get("displayLatLng")).get("lat").toString() + "," +
-                                ((JSONObject) ((JSONObject) jLegs.get(k)).get("displayLatLng")).get("lng").toString();
-                        String lat = ((JSONObject) ((JSONObject) jLegs.get(k)).get("displayLatLng")).get("lat").toString();
-                        String lng = ((JSONObject) ((JSONObject) jLegs.get(k)).get("displayLatLng")).get("lng").toString();
-                        Log.e("tag", "jLegs array: " + polyline);
-//                            List<LatLng> list = new ArrayList<>();
-//                            Log.e("TAG", "list: "+ list.size());
-                        /** Traversing all points */
-//                            for(int l=0;l<list.size();l++){
-                        HashMap<String, String> hm = new HashMap<>();
-                        hm.put("lat", lat);
-                        hm.put("lng", lng);
-                        path.add(hm);
-//                            }
+                        /** Traversing all steps */
+                        for(int k=0;k<jSteps.length();k++){
+                            JSONObject polyline ;
+                            polyline = (JSONObject) ((JSONObject)jSteps.get(k)).get("startPoint");
+                            Log.e(TAG, "parse: polyline : "+polyline );
+//                            List<LatLng> list = decodePoly(polyline);
+                            List<LatLng> list = new ArrayList<>();
+                            LatLng latLng=new LatLng(polyline.getDouble("lat"),polyline.getDouble("lng"));
+                            Log.e(TAG, "parse: latLng : "+latLng );
+                            list.add(latLng);
+                            /** Traversing all points */
+                            for(int l=0;l<list.size();l++){
+                                HashMap<String, String> hm = new HashMap<>();
+                                hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
+                                hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
+                                path.add(hm);
+                            }
+                        }
+                        Log.e(TAG, "parse: "+path );
+                        routes.add(path);
                     }
-//                    }
                 }
-                routes.add(path);
 
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.e("TAG", "parse: " + e.getLocalizedMessage());
-            } catch (Exception e) {
-                Log.e("TAG", "parse: " + e.getLocalizedMessage());
+                Log.e(TAG, "parse: "+e.getLocalizedMessage() );
+            }catch (Exception e){
+                Log.e(TAG, "parse: "+e.getLocalizedMessage() );
             }
 
 
@@ -468,7 +592,7 @@ public class MapquestActivity extends AppCompatActivity {
         /**
          * Method to decode polyline points
          * Courtesy : https://jeffreysambells.com/2010/05/27/decoding-polylines-from-google-maps-direction-api-with-java
-         */
+         * */
         private List<LatLng> decodePoly(String encoded) {
 
             List<LatLng> poly = new ArrayList<>();

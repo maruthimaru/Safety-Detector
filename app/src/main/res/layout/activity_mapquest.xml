@@ -3,4 +3,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/mapquestMapView"
-    app:mapquest_app_key="QPuUdzSDTeAnfqGVAlRG4RGjs5a8ei6P" />
+    app:mapquest_app_key="42K0L9WTmAuyBS6L8jD8gadFz5KjW3Yu" />

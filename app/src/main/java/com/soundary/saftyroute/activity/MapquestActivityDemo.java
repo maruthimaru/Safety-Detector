@@ -35,6 +35,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class MapquestActivityDemo extends AppCompatActivity {
 
@@ -43,6 +44,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
     private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(39.750307, -104.999472);
     String sourceString,destinationString;
     private ArrayList<LatLng> MarkerPoints=new ArrayList<>();
+    private String TAG=MapquestActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +66,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
                 mMapView.setStreetMode();
                 mMapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MAPQUEST_HEADQUARTERS_LOCATION, 12));
 //                addMarker(mapboxMap);
-                searchLocation(mapboxMap);
+//                searchLocation(mapboxMap);
                 mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
@@ -73,11 +75,88 @@ public class MapquestActivityDemo extends AppCompatActivity {
                     }
                 });
 
+
                 mapboxMap.setOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override
                     public void onMapClick(@NonNull LatLng point) {
+                        // Already two locations
+                        if (MarkerPoints.size() > 1) {
+                            MarkerPoints.clear();
+                            mMapboxMap.clear();
+                        }
+
+                        // Adding new item to the ArrayList
+                        MarkerPoints.add(point);
+
+                        // Creating MarkerOptions
+                        MarkerOptions options = new MarkerOptions();
+
+                        // Setting the position of the marker
+                        options.position(point);
+
+                        /**
+                         * For the start location, the color of marker is GREEN and
+                         * for the end location, the color of marker is RED.
+                         */
+//                        if (MarkerPoints.size() == 1) {
+//                            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//                        } else if (MarkerPoints.size() == 2) {
+//                            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//                        }
+
+
+                        // Add new marker to the Google Map Android API V2
+                        mMapboxMap.addMarker(options);
+
+                        // Checks, whether start and end locations are captured
+                        if (MarkerPoints.size() >= 2) {
+                            LatLng origin = MarkerPoints.get(0);
+                            LatLng dest = MarkerPoints.get(1);
+
+                            Geocoder geocoder;
+                            List<Address> sourceAddresses,destinationAddress;
+                            geocoder = new Geocoder(MapquestActivityDemo.this, Locale.getDefault());
+
+                            try {
+                                sourceAddresses = geocoder.getFromLocation(origin.getLatitude(), origin.getLongitude(), 1);
+                                String address = sourceAddresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                                String city = sourceAddresses.get(0).getLocality();
+                                String state = sourceAddresses.get(0).getAdminArea();
+                                String country = sourceAddresses.get(0).getCountryName();
+                                String postalCode = sourceAddresses.get(0).getPostalCode();
+                                String knownName = sourceAddresses.get(0).getFeatureName();
+//                                sourceString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            try {
+                                destinationAddress = geocoder.getFromLocation(dest.getLatitude(), dest.getLongitude(), 1);
+                                String address = destinationAddress.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                                String city = destinationAddress.get(0).getLocality();
+                                String state = destinationAddress.get(0).getAdminArea();
+                                String country = destinationAddress.get(0).getCountryName();
+                                String postalCode = destinationAddress.get(0).getPostalCode();
+                                String knownName = destinationAddress.get(0).getFeatureName();
+//                                destinationString=address+","+city+","+state+","+country+","+postalCode+","+knownName;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            // Getting URL to the Google Directions API
+                            String url = getUrl(origin, dest);
+//                            Log.d("onMapClick", url.toString());
+                            FetchUrl FetchUrl = new FetchUrl();
+
+                            // Start downloading json data from Google Directions API
+                            FetchUrl.execute(url);
+                            //move map camera
+                            mMapboxMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
+                            mMapboxMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+                        }
+
 
                     }
+
                 });
             }
         });
@@ -137,10 +216,10 @@ public class MapquestActivityDemo extends AppCompatActivity {
         Log.e("TAG","address" + sourceString + "detination : " + destinationString);
 
 // Origin of route
-        String str_origin = "origin="+origin.getLatitude()+","+origin.getLatitude();
+        String str_origin = "origin="+origin.getLatitude()+"%2C"+origin.getLatitude();
 
 // Destination of route
-        String str_dest = "destination="+dest.getLatitude()+","+dest.getLongitude();
+        String str_dest = "destination="+dest.getLatitude()+"%2C"+dest.getLongitude();
 
 // Sensor enabled
         String sensor = "sensor=false";
@@ -152,11 +231,11 @@ public class MapquestActivityDemo extends AppCompatActivity {
         String output = "json";
 
         //key
-        String key="?key=QPuUdzSDTeAnfqGVAlRG4RGjs5a8ei6P";
+        String key="?key=42K0L9WTmAuyBS6L8jD8gadFz5KjW3Yu";
 
 // Building the url to the web service
-        String url = "https://www.mapquestapi.com/directions/v2/route?key=QPuUdzSDTeAnfqGVAlRG4RGjs5a8ei6P&from=gandhipuram%2Ccoimbatore&to=pannimadai%2Ccoimbatore&outFormat=json&ambiguities=check&routeType=fastest&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false";
-
+        String url = "https://www.mapquestapi.com/directions/v2/alternateroutes"+key+"&from="+str_origin+"&to="+str_dest+"&outFormat=json&ambiguities=ignore&routeType=fastest&maxRoutes=3&timeOverage=25&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false&unit=M";
+        Log.e(TAG, "getUrl: "+url );
         return url;
     }
 
@@ -246,7 +325,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
+            Log.d("Exception", e.getLocalizedMessage());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -275,7 +354,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
                 Log.d("ParserTask",routes.toString());
 
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
+                Log.d("ParserTask",e.getLocalizedMessage());
                 e.printStackTrace();
             }
             return routes;
@@ -321,6 +400,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
             }
             else {
                 Log.d("onPostExecute","without Polylines drawn");
+
             }
         }
     }
@@ -335,10 +415,11 @@ public class MapquestActivityDemo extends AppCompatActivity {
             JSONArray jLegs;
             JSONArray jSteps;
 
+
             try {
 
-                jRoutes = jObject.getJSONArray("collections");
-
+                jRoutes = jObject.getJSONArray("route");
+                Log.e(TAG, "jRoutes: "+jRoutes );
                 /** Traversing all routes */
                 for(int i=0;i<jRoutes.length();i++){
                     jLegs = ( (JSONObject)jRoutes.get(i)).getJSONArray("legs");
@@ -346,29 +427,36 @@ public class MapquestActivityDemo extends AppCompatActivity {
 
                     /** Traversing all legs */
                     for(int j=0;j<jLegs.length();j++){
-                        jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
+                        jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("maneuvers");
 
                         /** Traversing all steps */
                         for(int k=0;k<jSteps.length();k++){
-                            String polyline = "";
-                            polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
-                            List<com.google.android.gms.maps.model.LatLng> list = decodePoly(polyline);
-
+                            JSONObject polyline ;
+                            polyline = (JSONObject) ((JSONObject)jSteps.get(k)).get("startPoint");
+                            Log.e(TAG, "parse: polyline : "+polyline );
+//                            List<LatLng> list = decodePoly(polyline);
+                            List<LatLng> list = new ArrayList<>();
+                            LatLng latLng=new LatLng(polyline.getDouble("lat"),polyline.getDouble("lng"));
+                            Log.e(TAG, "parse: latLng : "+latLng );
+                            list.add(latLng);
                             /** Traversing all points */
                             for(int l=0;l<list.size();l++){
                                 HashMap<String, String> hm = new HashMap<>();
-                                hm.put("lat", Double.toString((list.get(l)).latitude) );
-                                hm.put("lng", Double.toString((list.get(l)).longitude) );
+                                hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
+                                hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
                                 path.add(hm);
                             }
                         }
+                        Log.e(TAG, "parse: "+path );
                         routes.add(path);
                     }
                 }
 
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.e(TAG, "parse: "+e.getLocalizedMessage() );
             }catch (Exception e){
+                Log.e(TAG, "parse: "+e.getLocalizedMessage() );
             }
 
 
@@ -380,9 +468,9 @@ public class MapquestActivityDemo extends AppCompatActivity {
          * Method to decode polyline points
          * Courtesy : https://jeffreysambells.com/2010/05/27/decoding-polylines-from-google-maps-direction-api-with-java
          * */
-        private List<com.google.android.gms.maps.model.LatLng> decodePoly(String encoded) {
+        private List<LatLng> decodePoly(String encoded) {
 
-            List<com.google.android.gms.maps.model.LatLng> poly = new ArrayList<>();
+            List<LatLng> poly = new ArrayList<>();
             int index = 0, len = encoded.length();
             int lat = 0, lng = 0;
 
@@ -406,7 +494,7 @@ public class MapquestActivityDemo extends AppCompatActivity {
                 int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
                 lng += dlng;
 
-                com.google.android.gms.maps.model.LatLng p = new com.google.android.gms.maps.model.LatLng((((double) lat / 1E5)),
+                LatLng p = new LatLng((((double) lat / 1E5)),
                         (((double) lng / 1E5)));
                 poly.add(p);
             }
