@@ -99,6 +99,6 @@ class Route {
     var hasUnpaved: Boolean? = null
     @SerializedName("locationSequence")
     @Expose
-    var locationSequence: List<Int>? = null
+    var locationSequence: List<Any>? = null
 
 }

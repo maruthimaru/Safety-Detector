@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 class Info {
     @SerializedName("statuscode")
     @Expose
-    var statuscode: Int? = null
+    var statuscode: Any? = null
     @SerializedName("copyright")
     @Expose
     var copyright: Copyright? = null

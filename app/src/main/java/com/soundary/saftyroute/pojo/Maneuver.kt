@@ -33,7 +33,7 @@ class Maneuver {
     var maneuverNotes: List<Any>? = null
     @SerializedName("linkIds")
     @Expose
-    var linkIds: List<Int>? = null
+    var linkIds: List<Any>? = null
     @SerializedName("signs")
     @Expose
     var signs: List<Any>? = null

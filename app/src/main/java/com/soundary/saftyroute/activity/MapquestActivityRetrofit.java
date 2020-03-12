@@ -1,5 +1,6 @@
 package com.soundary.saftyroute.activity;
 
+
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -183,7 +185,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 
                                     try {
                                         List<AlternateRoute> alternateRouteList= response.body().getRoute().getAlternateRoutes();
-                                        ArrayList<LatLng> points;
+                                        ArrayList<LatLng> points=new ArrayList<>();
                                         PolylineOptions lineOptions = null;
 
                                         for (AlternateRoute alternateRoute:alternateRouteList){
@@ -198,11 +200,11 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                                                     LatLng latLng=new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
                                                     Log.e(TAG, "parse: latLng : "+latLng );
                                                     list.add(latLng);
-
+                                                    points.add(latLng);
                                                     // Adding all the points in the route to LineOptions
-                                                    lineOptions.addAll(list);
-                                                    lineOptions.width(10);
-                                                    lineOptions.color(Color.RED);
+//                                                    lineOptions.addAll(list);
+//                                                    lineOptions.width(10);
+//                                                    lineOptions.color(Color.RED);
                                                     /** Traversing all points */
 //                                                    for(int l=0;l<list.size();l++){
 //                                                        HashMap<String, String> hm = new HashMap<>();
@@ -212,6 +214,16 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 //                                                    }
                                                 }
                                             }
+                                            Random rand = new Random();
+                                            // Java 'Color' class takes 3 floats, from 0 to 1.
+                                            float r = rand.nextFloat();
+                                            float g = rand.nextFloat();
+                                            float b = rand.nextFloat();
+                                            float a = rand.nextFloat();
+                                            int colors=Color.rgb(r,g,b);
+                                            lineOptions.addAll(points);
+                                            lineOptions.width(10);
+                                            lineOptions.color(colors);
                                             // Drawing polyline in the Google Map for the i-th route
                                             if(lineOptions != null) {
                                                 mMapboxMap.addPolyline(lineOptions);
