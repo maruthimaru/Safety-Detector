@@ -81,9 +81,9 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
             public void onMapReady(MapboxMap mapboxMap) {
                 mMapboxMap = mapboxMap;
                 mMapView.setStreetMode();
-                mMapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MAPQUEST_HEADQUARTERS_LOCATION, 13));
+                mMapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MAPQUEST_HEADQUARTERS_LOCATION, 10));
                 addMarker(mapboxMap);
-//                searchLocation(mapboxMap);
+                searchLocation(mapboxMap);
                 mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
@@ -160,7 +160,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                             }
 
                             List<String> location=new ArrayList<>();
-                            String str_origin = origin.getLatitude()+","+origin.getLatitude();
+                            String str_origin = origin.getLatitude()+","+origin.getLongitude();
 //                            String str_origin = "11.001355"+","+"76.95993763494403";
 // Destination of route
                             String str_dest = dest.getLatitude()+","+dest.getLongitude();
@@ -170,16 +170,17 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                             JSONArray jsArray = new JSONArray();
                             for (int i = 0; i < location.size(); i++) {
                                 jsArray.put(location.get(i));
-                            }
+                            };
                             Log.e(TAG, "onMapClick: location : "+ jsArray );
 
                             RequestLocation requestLocation=new RequestLocation(location,3,100);
-                            Log.e(TAG, "onMapClick: requestLocation : "+requestLocation );
+                            Log.e(TAG, "onMapClick: requestLocation : "+new Gson().toJson(requestLocation ));
 
 
                             /*Create handle for the RetrofitInstance interface*/
                             GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
                             Call<AlternateRoutesResponse> call = service.getAllPhotos(requestLocation);
+                            Log.e(TAG, "onMapClick: "+call.request() );
                             call.enqueue(new Callback<AlternateRoutesResponse>() {
                                 @Override
                                 public void onResponse(Call<AlternateRoutesResponse> call, Response<AlternateRoutesResponse> response) {
@@ -400,13 +401,13 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 
 
         List<String> location=new ArrayList<>();
-//        String str_origin = latLng.getLatitude()+","+latLng.getLatitude();
+        String str_origin = latLng.getLatitude()+","+latLng.getLongitude();
 //                String str_origin =  "Denver, CO";
-                            String str_origin = "10.994793199685589"+","+"76.95993763494403";
+//                            String str_origin = "10.994793199685589"+","+"76.95993763494403";
 // Destination of route
-//        String str_dest = destinationlatLng.getLatitude()+","+destinationlatLng.getLongitude();
+        String str_dest = destinationlatLng.getLatitude()+","+destinationlatLng.getLongitude();
 //                String str_dest =   "Golden, CO";
-                            String str_dest = "11.009758422710263"+","+ "76.94394936132437";
+//                            String str_dest = "11.009758422710263"+","+ "76.94394936132437";
         location.add(str_origin);
         location.add(str_dest);
         JSONArray jsArray = new JSONArray();
@@ -557,7 +558,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 //
 //                                        }
 //                    mMapboxMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-                    mMapboxMap.animateCamera(CameraUpdateFactory.zoomTo(13));
+                    mMapboxMap.animateCamera(CameraUpdateFactory.zoomTo(10));
 
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -28,11 +28,11 @@ public class MainActivity extends AppCompatActivity {
         destination=findViewById(R.id.destination);
         source=findViewById(R.id.source);
 
-        Intent intent=new Intent(MainActivity.this,MapquestActivityRetrofit.class);
-        intent.putExtra("source","");
-        intent.putExtra("destination","");
-        startActivity(intent);
-        finish();
+//        Intent intent=new Intent(MainActivity.this,MapquestActivityRetrofit.class);
+//        intent.putExtra("source","");
+//        intent.putExtra("destination","");
+//        startActivity(intent);
+//        finish();
 
 
         logein.setOnClickListener(new View.OnClickListener() {
