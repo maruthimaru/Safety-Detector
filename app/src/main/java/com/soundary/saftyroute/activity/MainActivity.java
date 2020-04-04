@@ -45,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
                     if (destinationString.length()>0){
                         destination.setError(null);
 
-Intent intent=new Intent(MainActivity.this,MapquestActivityRetrofit.class);
+Intent intent=new Intent(MainActivity.this,MapquestActivityRetrofitGET.class);
 intent.putExtra("source",sourceString);
                         intent.putExtra("destination",destinationString);
                         startActivity(intent);
-                        finish();
+//                        finish();
                     }else {
                         destination.setError("should not be empty");
                         destination.requestFocus();

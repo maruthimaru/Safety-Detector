@@ -13,13 +13,23 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.style.sources.Source;
 import com.mapquest.mapping.MapQuest;
 import com.mapquest.mapping.maps.MapView;
 import com.soundary.saftyroute.R;
@@ -30,6 +40,7 @@ import com.soundary.saftyroute.pojo.Leg_;
 import com.soundary.saftyroute.pojo.Maneuver;
 import com.soundary.saftyroute.pojo.Maneuver_;
 import com.soundary.saftyroute.pojo.RequestLocation;
+import com.soundary.saftyroute.pojo.Shape;
 import com.soundary.saftyroute.retrofit.GetDataService;
 import com.soundary.saftyroute.retrofit.RetrofitClientInstance;
 
@@ -52,16 +63,15 @@ import java.util.Random;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MapquestActivityRetrofit extends AppCompatActivity {
+public class MapquestActivityRetrofitGET extends AppCompatActivity {
 
     private MapView mMapView;
     private MapboxMap mMapboxMap;
     private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(11.001473, 76.962509);
     String sourceString,destinationString;
     private ArrayList<LatLng> MarkerPoints=new ArrayList<>();
-    private String TAG=MapquestActivity.class.getSimpleName();
+    private String TAG=MapquestActivityRetrofitGET.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +97,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                 mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(@NonNull Marker marker) {
-                        Toast.makeText(MapquestActivityRetrofit.this, marker.getTitle(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MapquestActivityRetrofitGET.this, marker.getTitle(), Toast.LENGTH_LONG).show();
                         return true;
                     }
                 });
@@ -132,7 +142,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 
                             Geocoder geocoder;
                             List<Address> sourceAddresses,destinationAddress;
-                            geocoder = new Geocoder(MapquestActivityRetrofit.this, Locale.getDefault());
+                            geocoder = new Geocoder(MapquestActivityRetrofitGET.this, Locale.getDefault());
 
                             try {
                                 sourceAddresses = geocoder.getFromLocation(origin.getLatitude(), origin.getLongitude(), 1);
@@ -179,7 +189,9 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 
                             /*Create handle for the RetrofitInstance interface*/
                             GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
-                            Call<AlternateRoutesResponse> call = service.getAllPhotos(requestLocation);
+                            Call<AlternateRoutesResponse> call = service.getRoute("42K0L9WTmAuyBS6L8jD8gadFz5KjW3Yu",str_origin,str_dest,
+                                    "json","check","fastest",3,25,false,false,
+                                    false,"M");
                             Log.e(TAG, "onMapClick: "+call.request() );
                             call.enqueue(new Callback<AlternateRoutesResponse>() {
                                 @Override
@@ -327,7 +339,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                                 @Override
                                 public void onFailure(Call<AlternateRoutesResponse> call, Throwable t) {
                                     Log.e(TAG, "onFailure: "+t.getLocalizedMessage() );
-                                    Toast.makeText(MapquestActivityRetrofit.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MapquestActivityRetrofitGET.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
                                 }
                             });
 
@@ -391,7 +403,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
         mMapboxMap.addMarker(new MarkerOptions().position(destinationlatLng).title(destinationString));
         mMapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,13));
 //            mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-        Toast.makeText(getApplicationContext(),destinationaddress.getLatitude()+" "+destinationaddress.getLongitude(),Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(),destinationaddress.getLatitude()+" "+destinationaddress.getLongitude(),Toast.LENGTH_LONG).show();
 //        String url = getUrl(latLng, destinationlatLng);
 //        FetchUrl FetchUrl = new FetchUrl();
 
@@ -422,7 +434,9 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 
         /*Create handle for the RetrofitInstance interface*/
         GetDataService service = RetrofitClientInstance.getRetrofitInstance().create(GetDataService.class);
-        Call<AlternateRoutesResponse> call = service.getAllPhotos(requestLocation);
+        Call<AlternateRoutesResponse> call = service.getRoute("42K0L9WTmAuyBS6L8jD8gadFz5KjW3Yu",str_origin,str_dest,
+                "json","ignore","fastest",3,25,false,false,
+                false,"M");
         Log.e(TAG, "onMapClick: "+call.request() );
         call.enqueue(new Callback<AlternateRoutesResponse>() {
             @Override
@@ -433,7 +447,10 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                     List<AlternateRoute> alternateRouteList= response.body().getRoute().getAlternateRoutes();
 //                                        ArrayList<LatLng> points=new ArrayList<>();
                     PolylineOptions lineOptions = null;
-                    Log.e(TAG, "onResponse: "+ new Gson().toJson(response.body()));
+                    PolygonOptions polygon = new PolygonOptions();
+                    ArrayList<Point> routeCoordinates = new ArrayList<Point>();
+
+                    Log.e(TAG, "onResponse: "+ new Gson().toJson(alternateRouteList));
                     System.out.println(new Gson().toJson(response.body()));
                     if (alternateRouteList!=null) {
                         for (AlternateRoute alternateRoute : alternateRouteList) {
@@ -449,40 +466,63 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                             int colors = Color.rgb(r, g, b);
 //                            int dangerColor;
                             lineOptions = new PolylineOptions();
-                            List<Leg_> leg_list = alternateRoute.getRoute().getLegs();
-                            for (Leg_ leg_ : leg_list) {
-                                List<Maneuver_> maneuver_list = leg_.getManeuvers();
-                                for (Maneuver_ maneuver : maneuver_list) {
+                            List<Double> shapePoints = alternateRoute.getRoute().getShape().getShapePoints();
+                            // get every other shape point
+                            int pointcount = shapePoints.size() / 2;
 
-                                    List<LatLng> list = new ArrayList<>();
-                                    LatLng latLng = new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
-                                    Log.e(TAG, "onResponse: distance to :  " + (int)latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION));
-                                   int distance= (int)latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION);
-                                   if(distance==0){
-                                       colors=Color.RED;
-                                   }
-                                    list.add(latLng);
-                                    points.add(latLng);
-                                    // Adding all the points in the route to LineOptions
-//                                                    lineOptions.addAll(list);
-//                                                    lineOptions.width(10);
-//                                                    lineOptions.color(Color.RED);
-                                    /** Traversing all points */
-//                                                    for(int l=0;l<list.size();l++){
-//                                                        HashMap<String, String> hm = new HashMap<>();
-//                                                        hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
-//                                                        hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
-//                                                        path.add(hm);
-//                                                    }
-                                }
+                            // create a shape point list
+
+
+                            // fill list with every even value as lat and odd value as lng
+                            for (int point = 0; point < pointcount; point = point + 1) {
+                                points.add(new LatLng(
+                                        (double) shapePoints.get(point * 2),
+                                        (double) shapePoints.get(point * 2 + 1)
+                                ));
                             }
+
+
+//                            List<Leg_> leg_list = alternateRoute.getRoute().getLegs();
+//                            for (Leg_ leg_ : leg_list) {
+//                                List<Maneuver_> maneuver_list = leg_.getManeuvers();
+//                                for (Maneuver_ maneuver : maneuver_list) {
+//
+//                                    List<LatLng> list = new ArrayList<>();
+//                                    LatLng latLng = new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
+//                                    Log.e(TAG, "onResponse latLng : "+ latLng);
+////                                    list.add(latLng);
+////                                    points.add(latLng);
+//                                    routeCoordinates.add(Point.fromLngLat(maneuver.getStartPoint().getLng(),maneuver.getStartPoint().getLat()));
+////                                    Log.e(TAG, "onResponse: distance to :  " + (int)latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION));
+////                                    int distance= (int)latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION);
+////                                    if(distance==0){
+////                                        colors=Color.RED;
+////                                    }
+//                                    // Adding all the points in the route to LineOptions
+////                                                    lineOptions.addAll(list);
+////                                                    lineOptions.width(10);
+////                                                    lineOptions.color(Color.RED);
+//                                    /** Traversing all points */
+////                                                    for(int l=0;l<list.size();l++){
+////                                                        HashMap<String, String> hm = new HashMap<>();
+////                                                        hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
+////                                                        hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
+////                                                        path.add(hm);
+////                                                    }
+//                                }
+//                            }
 
                             lineOptions.addAll(points);
                             lineOptions.width(10);
                             lineOptions.color(colors);
+
+                            polygon.addAll(points);
+                            polygon.fillColor(colors);
+                            polygon.strokeColor(Color.BLACK);
+
                             // Drawing polyline in the Google Map for the i-th route
-                            if (lineOptions != null) {
-                                mMapboxMap.addPolyline(lineOptions);
+                            if (polygon != null) {
+                                mMapboxMap.addPolygon(polygon);
                             } else {
                                 Log.d("onPostExecute", "without Polylines drawn");
 
@@ -490,33 +530,55 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
 //                                            break;
                         }
                     }else {
-                        Log.e(TAG, "onResponse: route : "+ response.body().getRoute());
+                        Log.e(TAG, "onResponse: "+ new Gson().toJson(response.body().getRoute()));
                         List path = new ArrayList<>();
                         ArrayList<LatLng> points = new ArrayList<>();
                         lineOptions = new PolylineOptions();
-                        List<Leg> leg_list = response.body().getRoute().getLegs();
-                        for (Leg leg_ : leg_list) {
-                            List<Maneuver> maneuver_list = leg_.getManeuvers();
-                            for (Maneuver maneuver : maneuver_list) {
 
-                                List<LatLng> list = new ArrayList<>();
-                                LatLng latLng = new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
-                                Log.e(TAG, "onResponse: distance to :  " + latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION));
-                                list.add(latLng);
-                                points.add(latLng);
-                                // Adding all the points in the route to LineOptions
-//                                                    lineOptions.addAll(list);
-//                                                    lineOptions.width(10);
-//                                                    lineOptions.color(Color.RED);
-                                /** Traversing all points */
-//                                                    for(int l=0;l<list.size();l++){
-//                                                        HashMap<String, String> hm = new HashMap<>();
-//                                                        hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
-//                                                        hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
-//                                                        path.add(hm);
-//                                                    }
-                            }
+                        List<Double> shapePoints = response.body().getRoute().getShape().getShapePoints();
+                        Log.e(TAG, "onResponse: shapePoints "+new Gson().toJson(shapePoints) );
+                        // get every other shape point
+                        int pointcount = shapePoints.size() / 2;
+                        Log.e(TAG, "onResponse: pointcount "+pointcount );
+                        // create a shape point list
+
+
+                        // fill list with every even value as lat and odd value as lng
+                        for (int point = 0; point < pointcount; point = point + 1) {
+                            Log.e(TAG, "onResponse: point : "+point );
+                            points.add(new LatLng(
+                                    (double) shapePoints.get(point * 2),
+                                    (double) shapePoints.get(point * 2 + 1)
+                            ));
+                            routeCoordinates.add(Point.fromLngLat((double) shapePoints.get(point * 2 + 1),(double) shapePoints.get(point * 2)));
                         }
+
+//                        List<Leg> leg_list = response.body().getRoute().getLegs();
+//                        for (Leg leg_ : leg_list) {
+//                            List<Maneuver> maneuver_list = leg_.getManeuvers();
+//                            for (Maneuver maneuver : maneuver_list) {
+//
+//                                List<LatLng> list = new ArrayList<>();
+//                                LatLng latLng = new LatLng(maneuver.getStartPoint().getLat(), maneuver.getStartPoint().getLng());
+//                                Log.e(TAG, "onResponse latLng : "+ latLng);
+////                                list.add(latLng);
+////                                points.add(latLng);
+//                                routeCoordinates.add(Point.fromLngLat(maneuver.getStartPoint().getLng(),maneuver.getStartPoint().getLat()));
+////                                Log.e(TAG, "onResponse: distance to :  " + latLng.distanceTo(MAPQUEST_HEADQUARTERS_LOCATION));
+//
+//                                // Adding all the points in the route to LineOptions
+////                                                    lineOptions.addAll(list);
+////                                                    lineOptions.width(10);
+////                                                    lineOptions.color(Color.RED);
+//                                /** Traversing all points */
+////                                                    for(int l=0;l<list.size();l++){
+////                                                        HashMap<String, String> hm = new HashMap<>();
+////                                                        hm.put("lat", Double.toString((list.get(l)).getLatitude()) );
+////                                                        hm.put("lng", Double.toString((list.get(l)).getLatitude()) );
+////                                                        path.add(hm);
+////                                                    }
+//                            }
+//                        }
                         Random rand = new Random();
                         // Java 'Color' class takes 3 floats, from 0 to 1.
                         Log.e(TAG, "parse: latLng : " + points);
@@ -528,13 +590,42 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
                         lineOptions.addAll(points);
                         lineOptions.width(10);
                         lineOptions.color(colors);
-                        // Drawing polyline in the Google Map for the i-th route
-                        if (lineOptions != null) {
-                            mMapboxMap.addPolyline(lineOptions);
-                        } else {
-                            Log.d("onPostExecute", "without Polylines drawn");
+                        polygon.addAll(points);
+                        polygon.fillColor(colors);
+                        polygon.strokeColor(Color.BLACK);
 
-                        }
+
+                        // Create the LineString from the list of coordinates and then make a GeoJSON
+// FeatureCollection so we can add the line to our map as a layer.
+                        LineString lineString = LineString.fromLngLats(routeCoordinates);
+
+                        FeatureCollection featureCollection =
+                                FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(lineString)});
+
+                        Source geoJsonSource = new GeoJsonSource("line-source", featureCollection);
+
+                        mMapboxMap.addSource(geoJsonSource);
+
+                        LineLayer lineLayer = new LineLayer("linelayer", "line-source");
+
+
+// The layer properties for our line. This is where we make the line red, set its width, etc
+                        lineLayer.setProperties(
+                                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+                                PropertyFactory.lineWidth(2f),
+                                PropertyFactory.lineColor(Color.parseColor("#f20b0d"))
+                        );
+
+                        mMapboxMap.addLayer(lineLayer);
+
+//                        // Drawing polyline in the Google Map for the i-th route
+//                        if (polygon != null) {
+//                            mMapboxMap.addPolygon(polygon);
+//                        } else {
+//                            Log.d("onPostExecute", "without Polylines drawn");
+//
+//                        }
                     }
 
 //
@@ -578,7 +669,7 @@ public class MapquestActivityRetrofit extends AppCompatActivity {
             @Override
             public void onFailure(Call<AlternateRoutesResponse> call, Throwable t) {
                 Log.e(TAG, "onFailure: "+t.getLocalizedMessage() );
-                Toast.makeText(MapquestActivityRetrofit.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapquestActivityRetrofitGET.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
             }
         });
 
