@@ -68,7 +68,8 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
 
     private MapView mMapView;
     private MapboxMap mMapboxMap;
-    private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(11.001473, 76.962509);
+    private final LatLng MAPQUEST_HEADQUARTERS_LOCATION = new LatLng(10.969957,76.956184);
+    ArrayList<LatLng> dangerPoints = new ArrayList<>();
     String sourceString,destinationString;
     private ArrayList<LatLng> MarkerPoints=new ArrayList<>();
     private String TAG=MapquestActivityRetrofitGET.class.getSimpleName();
@@ -78,7 +79,11 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         MapQuest.start(getApplicationContext());
         setContentView(R.layout.activity_mapquest);
-
+        LatLng gopalapuram=new LatLng(10.992527,76.951492);
+        LatLng vgcentre=new LatLng(11.017129,76.96492);
+        dangerPoints.add(MAPQUEST_HEADQUARTERS_LOCATION);
+        dangerPoints.add(gopalapuram);
+        dangerPoints.add(vgcentre);
         mMapView = (MapView) findViewById(R.id.mapquestMapView);
         mMapView.onCreate(savedInstanceState);
 
@@ -92,7 +97,6 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                 mMapboxMap = mapboxMap;
                 mMapView.setStreetMode();
                 mMapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MAPQUEST_HEADQUARTERS_LOCATION, 13));
-                addMarker(mapboxMap);
                 searchLocation(mapboxMap);
                 mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
                     @Override
@@ -363,7 +367,7 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
         });
     }
 
-    private void addMarker(MapboxMap mapboxMap) {
+    private void addMarker(MapboxMap mapboxMap,LatLng MAPQUEST_HEADQUARTERS_LOCATION) {
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(MAPQUEST_HEADQUARTERS_LOCATION);
         markerOptions.title("MapQuest");
@@ -458,7 +462,7 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                             ArrayList<LatLng> points = new ArrayList<>();
                             Random rand = new Random();
                             // Java 'Color' class takes 3 floats, from 0 to 1.
-                            Log.e(TAG, "parse: latLng : " + points);
+
                             float r = rand.nextFloat();
                             float g = rand.nextFloat();
                             float b = rand.nextFloat();
@@ -479,6 +483,14 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                                         (double) shapePoints.get(point * 2),
                                         (double) shapePoints.get(point * 2 + 1)
                                 ));
+                                LatLng latLng = new LatLng((double) shapePoints.get(point * 2),(double) shapePoints.get(point * 2 + 1));
+                                for (LatLng dpoint: dangerPoints) {
+                                    int distance = (int) latLng.distanceTo(dpoint);
+                                    if (distance == 0) {
+                                        addMarker(mMapboxMap, latLng);
+                                        colors = Color.RED;
+                                    }
+                                }
                             }
 
 
@@ -511,26 +523,26 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
 ////                                                    }
 //                                }
 //                            }
-
+                            Log.e(TAG, "parse: latLng : " + points);
                             lineOptions.addAll(points);
-                            lineOptions.width(10);
+                            lineOptions.width(5);
                             lineOptions.color(colors);
-
+                            mMapboxMap.addPolyline(lineOptions);
                             polygon.addAll(points);
                             polygon.fillColor(colors);
                             polygon.strokeColor(Color.BLACK);
 
                             // Drawing polyline in the Google Map for the i-th route
-                            if (polygon != null) {
-                                mMapboxMap.addPolygon(polygon);
-                            } else {
-                                Log.d("onPostExecute", "without Polylines drawn");
-
-                            }
+//                            if (polygon != null) {
+//                                mMapboxMap.addPolygon(polygon);
+//                            } else {
+//                                Log.d("onPostExecute", "without Polylines drawn");
+//
+//                            }
 //                                            break;
                         }
                     }else {
-                        Log.e(TAG, "onResponse: "+ new Gson().toJson(response.body().getRoute()));
+//                        Log.e(TAG, "onResponse: "+ new Gson().toJson(response.body().getRoute()));
                         List path = new ArrayList<>();
                         ArrayList<LatLng> points = new ArrayList<>();
                         lineOptions = new PolylineOptions();
@@ -539,9 +551,16 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                         Log.e(TAG, "onResponse: shapePoints "+new Gson().toJson(shapePoints) );
                         // get every other shape point
                         int pointcount = shapePoints.size() / 2;
-                        Log.e(TAG, "onResponse: pointcount "+pointcount );
+//                        Log.e(TAG, "onResponse: pointcount "+pointcount );
                         // create a shape point list
-
+                        Random rand = new Random();
+                        // Java 'Color' class takes 3 floats, from 0 to 1.
+//                        Log.e(TAG, "parse: latLng : " + points);
+                        float r = rand.nextFloat();
+                        float g = rand.nextFloat();
+                        float b = rand.nextFloat();
+                        float a = rand.nextFloat();
+                        int colors = Color.rgb(r, g, b);
 
                         // fill list with every even value as lat and odd value as lng
                         for (int point = 0; point < pointcount; point = point + 1) {
@@ -550,6 +569,15 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                                     (double) shapePoints.get(point * 2),
                                     (double) shapePoints.get(point * 2 + 1)
                             ));
+                            LatLng latLng = new LatLng((double) shapePoints.get(point * 2),(double) shapePoints.get(point * 2 + 1));
+                            for (LatLng dpoint: dangerPoints) {
+                                int distance = (int) latLng.distanceTo(dpoint);
+                                Log.e(TAG, "onResponse: distance : " + distance);
+                                if (distance == 0) {
+                                    addMarker(mMapboxMap, latLng);
+                                    colors = Color.RED;
+                                }
+                            }
                             routeCoordinates.add(Point.fromLngLat((double) shapePoints.get(point * 2 + 1),(double) shapePoints.get(point * 2)));
                         }
 
@@ -579,45 +607,40 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
 ////                                                    }
 //                            }
 //                        }
-                        Random rand = new Random();
-                        // Java 'Color' class takes 3 floats, from 0 to 1.
-                        Log.e(TAG, "parse: latLng : " + points);
-                        float r = rand.nextFloat();
-                        float g = rand.nextFloat();
-                        float b = rand.nextFloat();
-                        float a = rand.nextFloat();
-                        int colors = Color.rgb(r, g, b);
+
                         lineOptions.addAll(points);
-                        lineOptions.width(10);
+                        lineOptions.width(5);
                         lineOptions.color(colors);
+                        mMapboxMap.addPolyline(lineOptions);
+
                         polygon.addAll(points);
                         polygon.fillColor(colors);
-                        polygon.strokeColor(Color.BLACK);
+                        polygon.strokeColor(colors);
 
 
                         // Create the LineString from the list of coordinates and then make a GeoJSON
 // FeatureCollection so we can add the line to our map as a layer.
-                        LineString lineString = LineString.fromLngLats(routeCoordinates);
+//                        LineString lineString = LineString.fromLngLats(routeCoordinates);
+//
+//                        FeatureCollection featureCollection =
+//                                FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(lineString)});
+//
+//                        Source geoJsonSource = new GeoJsonSource("line-source", featureCollection);
+//
+//                        mMapboxMap.addSource(geoJsonSource);
 
-                        FeatureCollection featureCollection =
-                                FeatureCollection.fromFeatures(new Feature[]{Feature.fromGeometry(lineString)});
-
-                        Source geoJsonSource = new GeoJsonSource("line-source", featureCollection);
-
-                        mMapboxMap.addSource(geoJsonSource);
-
-                        LineLayer lineLayer = new LineLayer("linelayer", "line-source");
+//                        LineLayer lineLayer = new LineLayer("linelayer", "line-source");
 
 
 // The layer properties for our line. This is where we make the line red, set its width, etc
-                        lineLayer.setProperties(
-                                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
-                                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
-                                PropertyFactory.lineWidth(2f),
-                                PropertyFactory.lineColor(Color.parseColor("#f20b0d"))
-                        );
-
-                        mMapboxMap.addLayer(lineLayer);
+//                        lineLayer.setProperties(
+//                                PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+//                                PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+//                                PropertyFactory.lineWidth(2f),
+//                                PropertyFactory.lineColor(Color.parseColor("#f20b0d"))
+//                        );
+////
+//                        mMapboxMap.addLayer(lineLayer);
 
 //                        // Drawing polyline in the Google Map for the i-th route
 //                        if (polygon != null) {
