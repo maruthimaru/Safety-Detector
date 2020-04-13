@@ -242,7 +242,12 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                                             float g = rand.nextFloat();
                                             float b = rand.nextFloat();
                                             float a = rand.nextFloat();
-                                            int colors = Color.rgb(r, g, b);
+                                            int colors = 0;
+                                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                                colors = Color.rgb(r, g, b);
+                                            }else{
+                                                colors = Color.GREEN;
+                                            }
                                             lineOptions.addAll(points);
                                             lineOptions.width(10);
                                             lineOptions.color(colors);
@@ -290,7 +295,12 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                                         float g = rand.nextFloat();
                                         float b = rand.nextFloat();
                                         float a = rand.nextFloat();
-                                        int colors = Color.rgb(r, g, b);
+                                        int colors = 0;
+                                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                            colors = Color.rgb(r, g, b);
+                                        }else {
+                                            colors = Color.GREEN;
+                                        }
                                         lineOptions.addAll(points);
                                         lineOptions.width(10);
                                         lineOptions.color(colors);
@@ -467,7 +477,12 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                             float g = rand.nextFloat();
                             float b = rand.nextFloat();
                             float a = rand.nextFloat();
-                            int colors = Color.rgb(r, g, b);
+                            int colors = 0;
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                                colors = Color.rgb(r, g, b);
+                            }else {
+                                colors = Color.GREEN;
+                            }
 //                            int dangerColor;
                             lineOptions = new PolylineOptions();
                             List<Double> shapePoints = alternateRoute.getRoute().getShape().getShapePoints();
@@ -560,7 +575,12 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                         float g = rand.nextFloat();
                         float b = rand.nextFloat();
                         float a = rand.nextFloat();
-                        int colors = Color.rgb(r, g, b);
+                        int colors = 0;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            colors = Color.rgb(r, g, b);
+                        }else {
+                            colors = Color.GREEN;
+                        }
 
                         // fill list with every even value as lat and odd value as lng
                         for (int point = 0; point < pointcount; point = point + 1) {

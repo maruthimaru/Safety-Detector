@@ -1,17 +1,19 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.soundary.saftyroute"
-        minSdkVersion 26
+        minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -45,7 +47,7 @@ dependencies {
 
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 
-//        debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
+        debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
 
     //mapquest
     implementation('com.mapquest:mapping-android-sdk:2.0.9')   // for Mapping SDK MapView
