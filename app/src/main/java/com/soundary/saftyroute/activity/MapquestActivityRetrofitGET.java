@@ -393,6 +393,7 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
         //source
         Geocoder geocoder = new Geocoder(this);
         try {
+            Log.e(TAG, "searchLocation: sourceString "+sourceString );
             addressList = geocoder.getFromLocationName(sourceString, 1);
 
         } catch (IOException e) {
@@ -501,7 +502,7 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                                 LatLng latLng = new LatLng((double) shapePoints.get(point * 2),(double) shapePoints.get(point * 2 + 1));
                                 for (LatLng dpoint: dangerPoints) {
                                     int distance = (int) latLng.distanceTo(dpoint);
-                                    if (distance == 0) {
+                                    if (distance <= 50) {
                                         addMarker(mMapboxMap, latLng);
                                         colors = Color.RED;
                                     }
@@ -593,7 +594,7 @@ public class MapquestActivityRetrofitGET extends AppCompatActivity {
                             for (LatLng dpoint: dangerPoints) {
                                 int distance = (int) latLng.distanceTo(dpoint);
                                 Log.e(TAG, "onResponse: distance : " + distance);
-                                if (distance == 0) {
+                                if (distance <= 50) {
                                     addMarker(mMapboxMap, latLng);
                                     colors = Color.RED;
                                 }
